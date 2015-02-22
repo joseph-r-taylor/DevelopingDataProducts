@@ -1,0 +1,75 @@
+mtcars Data Set Clustering
+========================================================
+author: Joseph R. Taylor
+date: 22 February 2015
+
+The Cluster
+========================================================
+
+Using the mtcars data set, we offer clusters based on on any
+two main parameters with between 3 and 8 total clusters.
+
+
+
+Slide With Code
+========================================================
+
+```{r}
+head(mtcars)
+```
+
+Our Shiny Server code looks like this:
+========================================================
+```
+library(shiny)
+data(mtcars)
+
+
+shinyServer(function(input, output, session) {
+        
+        
+        selectedData <- reactive({
+                mtcars[, c(input$xcol, input$ycol)]
+        })
+        
+        clusters <- reactive({
+                kmeans(selectedData(), input$clusters)
+        })
+        
+        output$plot1 <- renderPlot({
+                par(mar = c(5.1, 4.1, 0, 1))
+                plot(selectedData(),
+                     col = clusters()$cluster,
+                     pch = 20, cex = 3)
+                points(clusters()$centers, pch = 4, cex = 4, lwd = 4)
+        })
+        
+})
+```
+Our Shiny UI code looks like this:
+========================================================
+```
+library(shiny)
+data(mtcars)
+
+shinyUI(pageWithSidebar(
+        headerPanel('Dynamic Clustering (K-means Algorithm) of mtcars Dataset'),
+        sidebarPanel(
+                h4("Intialize by choosing the variables you would 
+                        like to see in the plot (X & Y)"),
+                selectInput('xcol', 'Choose X Variable', names(mtcars)),
+                selectInput('ycol', 'Choose Y Variable', names(mtcars),
+                            selected=names(mtcars)[[2]]),
+                h4("Now input the desired number of clusters (default is
+                   3)"),
+                numericInput('clusters', 'Number of Clusters', 3,
+                             min = 1, max = 9)
+        ),
+        mainPanel(
+                plotOutput('plot1')
+        )
+))
+```
+And the deployed app looks like this:
+========================================================
+![mtcars Cluster App View](appview.png)
